@@ -18,6 +18,9 @@ test('glasses viewport and D-pad contract are present', function() {
 test('reader comfort features are wired', function() {
   assert.match(html, /reader-settings/);
   assert.match(html, /toggle-reader-focus/);
+  assert.match(html, /release-badge/);
+  assert.match(app, /setupEnvironment/);
+  assert.match(app, /renderReleaseBadge/);
   assert.match(app, /applyReaderSettings/);
   assert.match(app, /setFocusMode/);
   assert.match(css, /#reader\.focus-mode/);

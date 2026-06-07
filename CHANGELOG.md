@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0
+
+- Added portfolio-style release governance with a source-of-truth release config, environment config, PR checklist, multi-environment CI, release-candidate packaging, and versioning docs.
+- Added a small release/environment badge to the glasses app shell.
+- Added release governance and environment regression tests.
+
 ## 0.1.0
 
 - Built a Meta Ray-Ban Display-focused ReadNovelFull reader.

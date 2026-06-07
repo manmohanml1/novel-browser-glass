@@ -39,7 +39,7 @@ This runs static app checks, lightweight glasses benchmarks, and Node contract t
 novel-browser/index.html       Glasses UI screens and app shell
 novel-browser/styles.css       Additive-display theme, focus states, reader modes
 novel-browser/app.js           Browser entrypoint and screen orchestration
-novel-browser/src/config/      App constants and default state
+novel-browser/src/config/      App constants, deployment environment, and release version
 novel-browser/src/features/    Testable feature rules such as reader settings and chapter jump
 novel-browser/src/services/    Browser storage and persistence helpers
 novel-browser/src/server/      Shared ReadNovelFull API/parser implementation
@@ -66,3 +66,19 @@ This repository is intended to be published with the `portfolio-showcase`, `port
 - user-centric reading comfort controls.
 
 Live production deployment: [novel-browser-glass.vercel.app](https://novel-browser-glass.vercel.app)
+
+## Contribution Flow
+
+Future improvements should be developed on a short-lived `feat/*` or `fix/*` branch, validated through GitHub Actions, reviewed in a Vercel Preview, recorded in the changelog and roadmap where applicable, and merged through a pull request. Each production version should finish with a matching GitHub Release tag and a quick public-app verification.
+
+## Release Versioning
+
+The small badge beside the app subtitle identifies the currently deployed release. Its source of truth is `novel-browser/src/config/release.js`.
+
+| Change Type | Pull Request Prefix | Version Change | Example |
+| --- | --- | --- | --- |
+| New user-facing feature | `feat:` | Minor version | `v0.1.0` -> `v0.2.0` |
+| Small fix or polish update | `fix:` | Patch version | `v0.2.0` -> `v0.2.1` |
+| Significant overhaul | `feat:` with a major-release note | Major version | `v0.9.0` -> `v1.0.0` |
+
+Pull request titles are checked automatically and must begin with either `feat: ` or `fix: `.

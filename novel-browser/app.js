@@ -1,4 +1,6 @@
 import { CONFIG, createDefaultData } from './src/config/app-config.js';
+import { setupEnvironment } from './src/config/environment.js';
+import { release } from './src/config/release.js';
 import * as chapterJump from './src/features/chapter-jump.js';
 import * as readerPreferences from './src/features/reader-settings.js';
 import { loadStoredData, normalizeStoredData as normalizePersistedData, saveStoredData } from './src/services/storage.js';
@@ -155,6 +157,15 @@ import * as textUtils from './src/utils/text.js';
         el.textContent = message;
       }
     });
+  }
+
+  function renderReleaseBadge(environment) {
+    var badge = document.getElementById('release-badge');
+    if (!badge || !environment || environment.showReleaseBadge === false) {
+      return;
+    }
+    badge.textContent = release.version + ' ' + environment.name;
+    badge.setAttribute('title', release.label + ' (' + release.type + ')');
   }
 
   function showToast(message, type) {
@@ -1677,6 +1688,8 @@ import * as textUtils from './src/utils/text.js';
   }
 
   function init() {
+    var environment = setupEnvironment();
+    renderReleaseBadge(environment);
     collectScreens();
     setupEvents();
     loadData();

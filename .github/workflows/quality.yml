@@ -24,11 +24,20 @@ jobs:
           fi
 
   validate:
-    name: Validate
+    name: Validate (${{ matrix.environment }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        node-version: [20, 22]
+        environment:
+          - development
+          - staging
+          - production
+        node-version:
+          - 20
+          - 22
+    env:
+      NOVEL_BROWSER_ENV: ${{ matrix.environment }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -46,3 +55,23 @@ jobs:
 
       - name: Run behavior tests
         run: npm test
+
+  static-artifact:
+    name: Package deployable app
+    needs:
+      - validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Package deployable files
+        uses: actions/upload-artifact@v4
+        with:
+          name: novel-browser-glass-static-app
+          path: |
+            novel-browser
+            api
+            vercel.json
+            package.json
+          if-no-files-found: error
