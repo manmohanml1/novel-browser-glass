@@ -6,6 +6,7 @@ Novel Browser Glass is deployed as a static glasses app plus Vercel serverless A
 
 - Provider: Vercel Hobby
 - Project: `novel-browser-glass`
+- Production URL: [novel-browser-glass.vercel.app](https://novel-browser-glass.vercel.app)
 - GitHub repository: [manmohanml1/novel-browser-glass](https://github.com/manmohanml1/novel-browser-glass)
 - Production branch: `main`
 

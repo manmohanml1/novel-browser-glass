@@ -65,4 +65,4 @@ This repository is intended to be published with the `portfolio-showcase`, `port
 - lightweight API proxying and source parsing,
 - user-centric reading comfort controls.
 
-No public live-app link is advertised until a tested HTTPS device preview is intentionally published.
+Live production deployment: [novel-browser-glass.vercel.app](https://novel-browser-glass.vercel.app)
