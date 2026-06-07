@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>Novel Browser</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app" class="app-root">
+    <div id="home" class="screen">
+      <header class="header">
+        <div>
+          <h1>Novel Browser</h1>
+          <div class="header-meta">Search and read ReadNovelFull chapters</div>
+        </div>
+        <span class="status-pill" id="status-indicator">Ready</span>
+      </header>
+
+      <div class="content">
+        <section class="hero-card">
+          <p class="hero-kicker">Search</p>
+          <h2 class="hero-title">Find a novel fast, then jump chapter to chapter.</h2>
+          <p class="hero-copy">Pick a saved title or build a query with the on-screen keys. The reader saves your last opened novel and chapter locally.</p>
+        </section>
+
+        <section class="panel">
+          <label class="field-label" for="search-input">Novel title</label>
+          <input
+            id="search-input"
+            class="text-input"
+            type="text"
+            placeholder="Lord of the Mysteries"
+            autocomplete="off"
+            readonly
+            tabindex="-1"
+            data-submit-action="run-search"
+          >
+          <div class="helper-row">
+            <button class="chip focusable" data-action="quick-search" data-value="Shadow Slave">Shadow Slave</button>
+            <button class="chip focusable" data-action="quick-search" data-value="Martial Peak">Martial Peak</button>
+            <button class="chip focusable" data-action="quick-search" data-value="Supreme Magus">Supreme Magus</button>
+            <button class="chip focusable" data-action="quick-search" data-value="Lord of the Mysteries">Lord of Mysteries</button>
+          </div>
+          <div class="key-grid" id="key-grid">
+            <button class="key focusable" data-action="append-char" data-char="A">A</button>
+            <button class="key focusable" data-action="append-char" data-char="B">B</button>
+            <button class="key focusable" data-action="append-char" data-char="C">C</button>
+            <button class="key focusable" data-action="append-char" data-char="D">D</button>
+            <button class="key focusable" data-action="append-char" data-char="E">E</button>
+            <button class="key focusable" data-action="append-char" data-char="F">F</button>
+            <button class="key focusable" data-action="append-char" data-char="G">G</button>
+            <button class="key focusable" data-action="append-char" data-char="H">H</button>
+            <button class="key focusable" data-action="append-char" data-char="I">I</button>
+            <button class="key focusable" data-action="append-char" data-char="J">J</button>
+            <button class="key focusable" data-action="append-char" data-char="K">K</button>
+            <button class="key focusable" data-action="append-char" data-char="L">L</button>
+            <button class="key focusable" data-action="append-char" data-char="M">M</button>
+            <button class="key focusable" data-action="append-char" data-char="N">N</button>
+            <button class="key focusable" data-action="append-char" data-char="O">O</button>
+            <button class="key focusable" data-action="append-char" data-char="P">P</button>
+            <button class="key focusable" data-action="append-char" data-char="Q">Q</button>
+            <button class="key focusable" data-action="append-char" data-char="R">R</button>
+            <button class="key focusable" data-action="append-char" data-char="S">S</button>
+            <button class="key focusable" data-action="append-char" data-char="T">T</button>
+            <button class="key focusable" data-action="append-char" data-char="U">U</button>
+            <button class="key focusable" data-action="append-char" data-char="V">V</button>
+            <button class="key focusable" data-action="append-char" data-char="W">W</button>
+            <button class="key focusable" data-action="append-char" data-char="X">X</button>
+            <button class="key focusable" data-action="append-char" data-char="Y">Y</button>
+            <button class="key focusable" data-action="append-char" data-char="Z">Z</button>
+            <button class="key wide focusable" data-action="append-char" data-char=" ">Space</button>
+            <button class="key wide focusable" data-action="delete-char">Delete</button>
+            <button class="key wide focusable" data-action="clear-query">Clear</button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-heading">
+            <h2>Results</h2>
+            <span class="section-meta" id="results-meta">No search yet</span>
+          </div>
+          <div id="loading" class="loading-container hidden">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Loading…</div>
+          </div>
+          <div id="error" class="error-container hidden">
+            <div class="error-icon">&#9888;</div>
+            <div class="error-message">Something went wrong</div>
+            <button class="nav-item focusable" data-action="retry-last">Try Again</button>
+          </div>
+          <div id="results-list" class="list-container"></div>
+        </section>
+
+        <section class="panel compact" id="resume-panel">
+          <div class="section-heading">
+            <h2>Continue</h2>
+            <span class="section-meta">Saved locally</span>
+          </div>
+          <div id="resume-card"></div>
+        </section>
+
+        <section class="panel compact">
+          <div class="section-heading">
+            <h2>Recent</h2>
+            <span class="section-meta" id="recent-meta">0 opened</span>
+          </div>
+          <div id="recent-list" class="list-container"></div>
+        </section>
+
+        <section class="panel compact">
+          <div class="section-heading">
+            <h2>Favorites</h2>
+            <span class="section-meta" id="favorites-meta">0 saved</span>
+          </div>
+          <div id="favorites-list" class="list-container"></div>
+        </section>
+      </div>
+
+      <nav class="nav-bar">
+        <button class="nav-item primary focusable" data-action="run-search">Search</button>
+        <button class="nav-item focusable" data-action="clear-results">Clear Results</button>
+        <button class="nav-item focusable" data-action="resume-last">Resume</button>
+      </nav>
+    </div>
+
+    <div id="detail" class="screen hidden">
+      <header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <div class="header-stack">
+          <h1 id="detail-title">Novel</h1>
+          <div class="header-meta" id="detail-author">Open a novel to see its chapter list</div>
+        </div>
+        <span class="status-pill" id="detail-status">Detail</span>
+      </header>
+
+      <div class="content">
+        <section class="panel detail-summary">
+          <div class="summary-topline">
+            <span class="badge badge-info" id="detail-rating">Rating --</span>
+            <span class="badge" id="detail-source">ReadNovelFull</span>
+          </div>
+          <p class="summary-meta" id="detail-genres">Genres will appear here</p>
+          <p class="summary-copy" id="detail-description">Search for a novel, then open it to browse chapters.</p>
+        </section>
+
+        <section class="panel">
+          <div class="section-heading">
+            <h2 id="detail-current-chapter">Chapters</h2>
+            <span class="section-meta" id="chapter-count">0 found</span>
+          </div>
+          <div class="jump-grid">
+            <button class="key wide focusable" data-action="detail-chapter-window" data-delta="-100">-100</button>
+            <button class="key wide focusable" data-action="detail-chapter-window" data-delta="-10">-10</button>
+            <button class="key wide focusable" data-action="detail-chapter-window" data-delta="10">+10</button>
+            <button class="key wide focusable" data-action="detail-chapter-window" data-delta="100">+100</button>
+          </div>
+          <div id="chapter-list" class="list-container tall"></div>
+        </section>
+      </div>
+
+      <nav class="nav-bar">
+        <button class="nav-item focusable" data-action="go-home">Home</button>
+        <button class="nav-item primary focusable" data-action="open-detail-current">Open</button>
+        <button class="nav-item focusable" data-action="toggle-novel-favorite">Favorite</button>
+        <button class="nav-item focusable" data-action="refresh-novel">Refresh</button>
+      </nav>
+    </div>
+
+    <div id="chapter-picker" class="screen hidden">
+      <header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <div class="header-stack">
+          <h1>Chapters</h1>
+          <div class="header-meta" id="picker-subtitle">Choose where to jump</div>
+        </div>
+        <span class="status-pill" id="picker-count">0</span>
+      </header>
+
+      <div class="content">
+        <section class="panel">
+          <div class="section-heading">
+            <h2 id="picker-current">Current chapter</h2>
+            <span class="section-meta" id="picker-window">Nearby</span>
+          </div>
+          <div class="jump-grid">
+            <button class="key wide focusable" data-action="chapter-window" data-delta="-100">-100</button>
+            <button class="key wide focusable" data-action="chapter-window" data-delta="-10">-10</button>
+            <button class="key wide focusable" data-action="chapter-window" data-delta="10">+10</button>
+            <button class="key wide focusable" data-action="chapter-window" data-delta="100">+100</button>
+          </div>
+        </section>
+        <section class="panel">
+          <div class="section-heading">
+            <h2>Jump to #</h2>
+            <span class="section-meta" id="chapter-jump-value">--</span>
+          </div>
+          <div class="number-grid">
+            <button class="key focusable" data-action="append-chapter-digit" data-digit="1">1</button>
+            <button class="key focusable" data-action="append-chapter-digit" data-digit="2">2</button>
+            <button class="key focusable" data-action="append-chapter-digit" data-digit="3">3</button>
+            <button class="key focusable" data-action="append-chapter-digit" data-digit="4">4</button>
+            <button class="key focusable" data-action="append-chapter-digit" data-digit="5">5</button>
+            <button class="key focusable" data-action="append-chapter-digit" data-digit="6">6</button>
+            <button class="key focusable" data-action="append-chapter-digit" data-digit="7">7</button>
+            <button class="key focusable" data-action="append-chapter-digit" data-digit="8">8</button>
+            <button class="key focusable" data-action="append-chapter-digit" data-digit="9">9</button>
+            <button class="key focusable" data-action="clear-chapter-jump">Clear</button>
+            <button class="key focusable" data-action="append-chapter-digit" data-digit="0">0</button>
+            <button class="key focusable" data-action="go-chapter-jump">Go</button>
+          </div>
+        </section>
+        <section class="panel">
+          <div id="picker-list" class="list-container tall"></div>
+        </section>
+      </div>
+
+      <nav class="nav-bar">
+        <button class="nav-item focusable" data-action="go-home">Home</button>
+        <button class="nav-item focusable" data-action="chapter-window" data-delta="-1">Up</button>
+        <button class="nav-item primary focusable" data-action="open-picker-current">Open</button>
+        <button class="nav-item focusable" data-action="chapter-window" data-delta="1">Down</button>
+      </nav>
+    </div>
+
+    <div id="reader" class="screen hidden">
+      <header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <div class="header-stack">
+          <h1 id="reader-title">Chapter</h1>
+          <div class="header-meta" id="reader-subtitle">Ready to read</div>
+        </div>
+        <span class="status-pill" id="reader-progress">0%</span>
+      </header>
+
+      <div class="content reading-content" id="reader-scroll">
+        <section class="panel reader-panel">
+          <div id="reader-body" class="reader-body">
+            <p class="reader-placeholder">Open a chapter to start reading.</p>
+          </div>
+        </section>
+      </div>
+
+      <nav class="nav-bar">
+        <button class="nav-item focusable" data-action="go-home">Home</button>
+        <button class="nav-item focusable focus-optional" data-action="prev-chapter">Prev</button>
+        <button class="nav-item focusable" data-action="open-chapter-picker">Chapters</button>
+        <button class="nav-item focusable focus-optional" data-action="open-reader-settings">Settings</button>
+        <button class="nav-item focusable" data-action="toggle-reader-focus" id="focus-mode-button">Focus</button>
+        <button class="nav-item primary focusable" data-action="next-chapter">Next</button>
+      </nav>
+    </div>
+
+    <div id="reader-settings" class="screen hidden">
+      <header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <div class="header-stack">
+          <h1>Reader Settings</h1>
+          <div class="header-meta">Tune the page for your eyes and lighting.</div>
+        </div>
+        <span class="status-pill" id="settings-summary">Comfort</span>
+      </header>
+
+      <div class="content">
+        <section class="panel">
+          <div class="setting-row">
+            <div>
+              <h2>Text Size</h2>
+              <p id="setting-font-label">16px</p>
+            </div>
+            <div class="setting-controls">
+              <button class="key focusable" data-action="reader-font" data-delta="-1">-</button>
+              <button class="key focusable" data-action="reader-font" data-delta="1">+</button>
+            </div>
+          </div>
+        </section>
+        <section class="panel">
+          <div class="setting-row">
+            <div>
+              <h2>Line Space</h2>
+              <p id="setting-space-label">Normal</p>
+            </div>
+            <div class="setting-controls">
+              <button class="key focusable" data-action="reader-space" data-delta="-1">-</button>
+              <button class="key focusable" data-action="reader-space" data-delta="1">+</button>
+            </div>
+          </div>
+        </section>
+        <section class="panel">
+          <button class="list-item focusable" data-action="toggle-reader-comfort">
+            <span class="list-item-icon">&#9681;</span>
+            <span class="list-item-content">
+              <span class="list-item-title">Comfort Tone</span>
+              <span class="list-item-meta" id="setting-comfort-label">Warmer reading text</span>
+            </span>
+            <span class="list-item-badge" id="setting-comfort-badge">On</span>
+          </button>
+        </section>
+      </div>
+
+      <nav class="nav-bar">
+        <button class="nav-item focusable" data-action="back">Back</button>
+        <button class="nav-item primary focusable" data-action="toggle-reader-focus">Focus</button>
+      </nav>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "novel-browser-glass",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "check": "node scripts/check.cjs",
+    "benchmark": "node scripts/benchmark.cjs",
+    "test": "node --test tests/*.test.mjs",
+    "verify": "npm run check && npm run benchmark && npm test",
+    "dev": "node work/dev-server.mjs"
+  }
+}

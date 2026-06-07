@@ -1,0 +1,48 @@
+name: Novel Browser Glass Quality
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+jobs:
+  pull-request-title:
+    name: Validate PR title convention
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require feat or fix prefix
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if [[ ! "$PR_TITLE" =~ ^(feat|fix):[[:space:]].+ ]]; then
+            echo "Pull request titles must start with 'feat: ' or 'fix: '."
+            exit 1
+          fi
+
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20, 22]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Run static checks
+        run: npm run check
+
+      - name: Run benchmarks
+        run: npm run benchmark
+
+      - name: Run behavior tests
+        run: npm test
