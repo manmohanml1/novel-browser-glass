@@ -10,6 +10,8 @@ Novel Browser Glass is a static vanilla JavaScript webapp served by a small loca
 - `styles.css` preserves the 600 by 600 additive-display contract with black page background, visible dark surfaces, and strong focus rings.
 - `app.js` owns screen orchestration, focus movement, and browser event handling.
 - `src/config/` keeps app constants and default persisted state.
+- `src/config/release.js` is the source of truth for the visible app version badge.
+- `src/config/environment.js` resolves local, staging, and production behavior for CI and previews.
 - `src/features/` keeps feature-level logic that can be tested independently, including chapter jump resolution and reader setting rules.
 - `src/services/` keeps local storage and persistence helpers.
 - `src/utils/` keeps text, URL label, HTML escaping, and search-result normalization helpers.

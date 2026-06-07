@@ -9,6 +9,8 @@ const requiredFiles = [
   'novel-browser/favicon.png',
   'novel-browser/manifest.webmanifest',
   'novel-browser/src/config/app-config.js',
+  'novel-browser/src/config/environment.js',
+  'novel-browser/src/config/release.js',
   'novel-browser/src/features/chapter-jump.js',
   'novel-browser/src/features/reader-settings.js',
   'novel-browser/src/services/storage.js',
@@ -18,6 +20,7 @@ const requiredFiles = [
   'api/search.js',
   'api/novel.js',
   'api/chapter.js',
+  '.github/PULL_REQUEST_TEMPLATE.md',
   '.github/workflows/quality.yml',
   '.github/workflows/release-candidate.yml',
   'vercel.json',
@@ -34,6 +37,8 @@ const scripts = [
   'novel-browser/app.js',
   'novel-browser/sw.js',
   'novel-browser/src/config/app-config.js',
+  'novel-browser/src/config/environment.js',
+  'novel-browser/src/config/release.js',
   'novel-browser/src/features/chapter-jump.js',
   'novel-browser/src/features/reader-settings.js',
   'novel-browser/src/services/storage.js',
@@ -61,6 +66,7 @@ async function main() {
   const html = await readFile('novel-browser/index.html', 'utf8');
   const css = await readFile('novel-browser/styles.css', 'utf8');
   const app = await readFile('novel-browser/app.js', 'utf8');
+  const release = await readFile('novel-browser/src/config/release.js', 'utf8');
   const storage = await readFile('novel-browser/src/services/storage.js', 'utf8');
   const manifest = JSON.parse(await readFile('novel-browser/manifest.webmanifest', 'utf8'));
   const vercel = JSON.parse(await readFile('vercel.json', 'utf8'));
@@ -76,6 +82,9 @@ async function main() {
     ['#reader.focus-mode', css, 'Focus mode styling must be present.'],
     ['localStorage', storage, 'Storage service must persist local reading state.'],
     ['saveStoredData', app, 'App must save local reading state through the storage service.'],
+    ['setupEnvironment', app, 'App must configure a deployment environment.'],
+    ['release-badge', html, 'App shell must expose the release badge.'],
+    ['version:', release, 'Release config must expose the deployed version.'],
     ['src/features/chapter-jump.js', html + app, 'Chapter jumping must live behind a feature module.'],
     ['src/features/reader-settings.js', html + app, 'Reader preferences must live behind a feature module.'],
     ['prefetchAdjacentChapters', app, 'Reader must prefetch adjacent chapters.'],

@@ -39,6 +39,8 @@ npm run dev
 - Feature-level chapter jump rules, including leading-zero cleanup and 1-based fallback behavior.
 - Feature-level reader setting rules, including glasses-safe bounds and CSS variable output.
 - Text utility rules for search cleanup, HTML escaping, stable URL labels, and duplicate result removal.
+- Release governance rules for PR checklists, version policy, CI environments, artifact packaging, and GitHub release tagging.
+- Deployment environment rules for local, staging/preview, and production hostnames.
 
 ## Manual Glasses-Focused Checks
 

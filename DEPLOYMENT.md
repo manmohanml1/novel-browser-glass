@@ -20,11 +20,23 @@ The intended release flow mirrors the portfolio website:
 4. Let GitHub Actions run static checks, benchmarks, and tests.
 5. Review the Vercel Preview URL at the 600 by 600 glasses viewport.
 6. Merge to `main` only after CI and preview checks pass.
-7. Confirm the production Vercel deployment and update `CHANGELOG.md`.
+7. Create the matching GitHub release tag after confirming the production Vercel deployment and public release badge.
 
 ## Release Candidate Workflow
 
 Run **Prepare Release Candidate** manually from GitHub Actions when you want a packaged staging or production candidate. The workflow validates syntax, benchmarks, and regression tests, then uploads the static app, API routes, Vercel config, and package manifest as an artifact tied to the commit SHA.
+
+## Environments
+
+The quality pipeline validates three logical environments:
+
+| Application Environment | Use |
+| --- | --- |
+| `development` | Local changes and early experimentation |
+| `staging` | Vercel previews and release-candidate review |
+| `production` | Public production deployment |
+
+Local previews can force staging or production rules with `?env=staging` or `?env=production`. Remote Vercel preview-style hostnames resolve to staging, and the production alias resolves to production.
 
 ## Vercel Routing
 
