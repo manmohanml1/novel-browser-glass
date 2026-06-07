@@ -34,6 +34,11 @@ npm run dev
 - Recent history, favorites, and resume wiring.
 - Offline shell registration.
 - Static file presence, syntax checks, manifest icon, and glasses UI benchmarks.
+- ReadNovelFull title scoring, novel parsing, chapter parsing, archive parsing, and fallback parsing.
+- Storage normalization, corrupt-state fallback, and reader-settings persistence.
+- Feature-level chapter jump rules, including leading-zero cleanup and 1-based fallback behavior.
+- Feature-level reader setting rules, including glasses-safe bounds and CSS variable output.
+- Text utility rules for search cleanup, HTML escaping, stable URL labels, and duplicate result removal.
 
 ## Manual Glasses-Focused Checks
 

@@ -25,7 +25,7 @@ test('reader comfort features are wired', function() {
 
 test('chapter navigation and resume features are wired', function() {
   assert.match(html, /go-chapter-jump/);
-  assert.match(app, /findChapterIndexByNumber/);
+  assert.match(app, /chapterJump\.resolveChapterJumpIndex/);
   assert.match(app, /prefetchAdjacentChapters/);
   assert.match(app, /recentNovels/);
   assert.match(app, /resumeFavorite/);
@@ -34,4 +34,19 @@ test('chapter navigation and resume features are wired', function() {
 test('offline shell is registered', function() {
   assert.match(html, /manifest\.webmanifest/);
   assert.match(app, /serviceWorker\.register/);
+});
+
+test('Vercel and modular source structure are present', async function() {
+  const vercel = await readFile('vercel.json', 'utf8');
+  const server = await readFile('novel-browser/src/server/readnovelfull.mjs', 'utf8');
+  const jumpFeature = await readFile('novel-browser/src/features/chapter-jump.js', 'utf8');
+  const readerFeature = await readFile('novel-browser/src/features/reader-settings.js', 'utf8');
+  const searchApi = await readFile('api/search.js', 'utf8');
+
+  assert.match(vercel, /novel-browser\/index\.html/);
+  assert.match(searchApi, /handleApiRequest/);
+  assert.match(server, /export async function searchNovels/);
+  assert.match(server, /export function parseChapterHtml/);
+  assert.match(jumpFeature, /export function resolveChapterJumpIndex/);
+  assert.match(readerFeature, /export function getReaderStyleVars/);
 });

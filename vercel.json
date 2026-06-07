@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "public": true,
+  "rewrites": [
+    { "source": "/", "destination": "/novel-browser/index.html" },
+    { "source": "/app.js", "destination": "/novel-browser/app.js" },
+    { "source": "/styles.css", "destination": "/novel-browser/styles.css" },
+    { "source": "/sw.js", "destination": "/novel-browser/sw.js" },
+    { "source": "/favicon.png", "destination": "/novel-browser/favicon.png" },
+    { "source": "/manifest.webmanifest", "destination": "/novel-browser/manifest.webmanifest" },
+    { "source": "/src/:path*", "destination": "/novel-browser/src/:path*" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    }
+  ]
+}

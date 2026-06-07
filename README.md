@@ -17,7 +17,7 @@ Glasses-first novel reader for Meta Ray-Ban Display, built around ReadNovelFull 
 npm run dev
 ```
 
-Open the printed local URL. The current default is `http://127.0.0.1:4199/`.
+Open the printed local URL. The current default is `http://127.0.0.1:4200/`.
 
 Controls:
 
@@ -38,16 +38,22 @@ This runs static app checks, lightweight glasses benchmarks, and Node contract t
 ```text
 novel-browser/index.html       Glasses UI screens and app shell
 novel-browser/styles.css       Additive-display theme, focus states, reader modes
-novel-browser/app.js           Navigation, persistence, reader settings, API client
+novel-browser/app.js           Browser entrypoint and screen orchestration
+novel-browser/src/config/      App constants and default state
+novel-browser/src/features/    Testable feature rules such as reader settings and chapter jump
+novel-browser/src/services/    Browser storage and persistence helpers
+novel-browser/src/server/      Shared ReadNovelFull API/parser implementation
+novel-browser/src/utils/       Text, URL label, escaping, and result-normalization helpers
 novel-browser/sw.js            Offline static shell cache
-work/dev-server.mjs            Local static server and ReadNovelFull proxy API
-scripts/check.cjs              Static application contract checks
-scripts/benchmark.cjs          Size and glasses UX benchmark checks
-tests/                         Node contract tests
+api/                           Vercel serverless API routes
+work/dev-server.mjs            Local static server and API preview
+scripts/                       Static checks and benchmark checks
+tests/                         Feature-level and regression tests
 .github/workflows/quality.yml  Push and pull-request quality gate
+.github/workflows/release-candidate.yml Manual release-candidate package gate
 ```
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for implementation choices, [TESTING.md](TESTING.md) for validation coverage, [SECURITY.md](SECURITY.md) for network and content guardrails, [ROADMAP.md](ROADMAP.md) for future work, and [CHANGELOG.md](CHANGELOG.md) for project history.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for implementation choices, [TESTING.md](TESTING.md) for validation coverage, [DEPLOYMENT.md](DEPLOYMENT.md) for Vercel release flow, [SECURITY.md](SECURITY.md) for network and content guardrails, [ROADMAP.md](ROADMAP.md) for future work, and [CHANGELOG.md](CHANGELOG.md) for project history.
 
 ## Portfolio Classification
 

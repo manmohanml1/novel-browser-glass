@@ -8,17 +8,23 @@ Novel Browser Glass is a static vanilla JavaScript webapp served by a small loca
 
 - `index.html` defines five primary screens: Home, Novel Detail, Chapter Picker, Reader, and Reader Settings.
 - `styles.css` preserves the 600 by 600 additive-display contract with black page background, visible dark surfaces, and strong focus rings.
-- `app.js` owns screen navigation, focus movement, local persistence, API calls, reader settings, favorites, recent history, and chapter progress.
+- `app.js` owns screen orchestration, focus movement, and browser event handling.
+- `src/config/` keeps app constants and default persisted state.
+- `src/features/` keeps feature-level logic that can be tested independently, including chapter jump resolution and reader setting rules.
+- `src/services/` keeps local storage and persistence helpers.
+- `src/utils/` keeps text, URL label, HTML escaping, and search-result normalization helpers.
 
 ## Server
 
-`work/dev-server.mjs` serves static files and exposes:
+`src/server/readnovelfull.mjs` owns ReadNovelFull URL normalization, search ranking, metadata parsing, archive parsing, and chapter parsing.
+
+`work/dev-server.mjs` serves static files locally and forwards API requests to the shared server module. `api/` contains Vercel serverless route wrappers for the same shared module:
 
 - `/api/search?q=...` for ranked novel search.
 - `/api/novel?url=...` for novel metadata and full chapter archive extraction.
 - `/api/chapter?url=...` for direct chapter parsing with mirror fallback.
 
-The server only accepts ReadNovelFull URLs and normalizes them to `http://readnovelfull.com/...`.
+The API only accepts ReadNovelFull URLs and normalizes them to `http://readnovelfull.com/...`.
 
 ## Persistence
 

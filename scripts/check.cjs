@@ -8,9 +8,22 @@ const requiredFiles = [
   'novel-browser/sw.js',
   'novel-browser/favicon.png',
   'novel-browser/manifest.webmanifest',
+  'novel-browser/src/config/app-config.js',
+  'novel-browser/src/features/chapter-jump.js',
+  'novel-browser/src/features/reader-settings.js',
+  'novel-browser/src/services/storage.js',
+  'novel-browser/src/server/readnovelfull.mjs',
+  'novel-browser/src/utils/text.js',
   'work/dev-server.mjs',
+  'api/search.js',
+  'api/novel.js',
+  'api/chapter.js',
+  '.github/workflows/quality.yml',
+  '.github/workflows/release-candidate.yml',
+  'vercel.json',
   'README.md',
   'ARCHITECTURE.md',
+  'DEPLOYMENT.md',
   'CHANGELOG.md',
   'ROADMAP.md',
   'SECURITY.md',
@@ -20,7 +33,16 @@ const requiredFiles = [
 const scripts = [
   'novel-browser/app.js',
   'novel-browser/sw.js',
+  'novel-browser/src/config/app-config.js',
+  'novel-browser/src/features/chapter-jump.js',
+  'novel-browser/src/features/reader-settings.js',
+  'novel-browser/src/services/storage.js',
+  'novel-browser/src/server/readnovelfull.mjs',
+  'novel-browser/src/utils/text.js',
   'work/dev-server.mjs',
+  'api/search.js',
+  'api/novel.js',
+  'api/chapter.js',
   'scripts/check.cjs',
   'scripts/benchmark.cjs'
 ];
@@ -39,7 +61,9 @@ async function main() {
   const html = await readFile('novel-browser/index.html', 'utf8');
   const css = await readFile('novel-browser/styles.css', 'utf8');
   const app = await readFile('novel-browser/app.js', 'utf8');
+  const storage = await readFile('novel-browser/src/services/storage.js', 'utf8');
   const manifest = JSON.parse(await readFile('novel-browser/manifest.webmanifest', 'utf8'));
+  const vercel = JSON.parse(await readFile('vercel.json', 'utf8'));
   const icon = await stat('novel-browser/favicon.png');
 
   [
@@ -50,7 +74,10 @@ async function main() {
     ['id="recent-list"', html, 'Recent novels shelf must be present.'],
     ['.focusable:focus', css, 'CSS must expose focused D-pad targets.'],
     ['#reader.focus-mode', css, 'Focus mode styling must be present.'],
-    ['localStorage', app, 'App must persist local reading state.'],
+    ['localStorage', storage, 'Storage service must persist local reading state.'],
+    ['saveStoredData', app, 'App must save local reading state through the storage service.'],
+    ['src/features/chapter-jump.js', html + app, 'Chapter jumping must live behind a feature module.'],
+    ['src/features/reader-settings.js', html + app, 'Reader preferences must live behind a feature module.'],
     ['prefetchAdjacentChapters', app, 'Reader must prefetch adjacent chapters.'],
     ['readerSettings', app, 'Reader preferences must be persisted.'],
     ['recentNovels', app, 'Recent history must be persisted.'],
@@ -61,6 +88,10 @@ async function main() {
 
   if (!manifest.icons || !manifest.icons.some(function(entry) { return entry.src === 'favicon.png'; })) {
     failures.push('Manifest must reference favicon.png.');
+  }
+
+  if (!vercel.rewrites || !vercel.rewrites.some(function(entry) { return entry.source === '/'; })) {
+    failures.push('Vercel config must rewrite / to the glasses app shell.');
   }
 
   if (icon.size < 100) {

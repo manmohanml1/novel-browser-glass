@@ -1,13 +1,11 @@
+import { CONFIG, createDefaultData } from './src/config/app-config.js';
+import * as chapterJump from './src/features/chapter-jump.js';
+import * as readerPreferences from './src/features/reader-settings.js';
+import { loadStoredData, normalizeStoredData as normalizePersistedData, saveStoredData } from './src/services/storage.js';
+import * as textUtils from './src/utils/text.js';
+
 (function() {
   'use strict';
-
-  var CONFIG = {
-    appName: 'Novel Browser',
-    storageKey: 'mdg_novel_browser',
-    apiBaseUrl: '',
-    requestTimeout: 15000,
-    cacheDuration: 5 * 60 * 1000
-  };
 
   var state = {
     currentScreen: 'home',
@@ -19,20 +17,7 @@
     searchRequestId: 0,
     searchingQuery: '',
     resultsCleared: false,
-    data: {
-      recentQuery: '',
-      lastNovel: null,
-      currentNovel: null,
-      currentChapter: null,
-      favorites: [],
-      progressByChapter: {},
-      readerSettings: {
-        fontSize: 16,
-        lineSpace: 0,
-        comfort: true
-      },
-      recentNovels: []
-    },
+    data: createDefaultData(),
     results: [],
     currentNovel: null,
     currentChapter: null,
@@ -189,35 +174,15 @@
   }
 
   function loadData() {
-    try {
-      var saved = localStorage.getItem(CONFIG.storageKey);
-      if (saved) {
-        var parsed = JSON.parse(saved);
-        Object.assign(state.data, parsed);
-      }
-      normalizeStoredData();
-    } catch (error) {
-      console.error('[Storage] Load failed', error);
-    }
+    state.data = loadStoredData(CONFIG.storageKey, state.data);
   }
 
   function normalizeStoredData() {
-    state.data.favorites = state.data.favorites || [];
-    state.data.progressByChapter = state.data.progressByChapter || {};
-    state.data.readerSettings = Object.assign({
-      fontSize: 16,
-      lineSpace: 0,
-      comfort: true
-    }, state.data.readerSettings || {});
-    state.data.recentNovels = state.data.recentNovels || [];
+    state.data = normalizePersistedData(state.data);
   }
 
   function saveData() {
-    try {
-      localStorage.setItem(CONFIG.storageKey, JSON.stringify(state.data));
-    } catch (error) {
-      console.error('[Storage] Save failed', error);
-    }
+    saveStoredData(CONFIG.storageKey, state.data);
   }
 
   function withTimeout(promise, timeoutMs) {
@@ -906,7 +871,7 @@
       fontLabel.textContent = settings.fontSize + 'px';
     }
     if (spaceLabel) {
-      spaceLabel.textContent = settings.lineSpace === -1 ? 'Compact' : (settings.lineSpace === 1 ? 'Roomy' : 'Normal');
+      spaceLabel.textContent = readerPreferences.describeLineSpace(settings.lineSpace);
     }
     if (comfortLabel) {
       comfortLabel.textContent = settings.comfort ? 'Warmer reading text' : 'Cool bright text';
@@ -920,14 +885,14 @@
   }
 
   function applyReaderSettings() {
+    state.data.readerSettings = readerPreferences.normalizeReaderSettings(state.data.readerSettings);
     var settings = state.data.readerSettings;
+    var vars = readerPreferences.getReaderStyleVars(settings);
     var root = document.documentElement;
-    var lineHeight = settings.lineSpace === -1 ? 1.42 : (settings.lineSpace === 1 ? 1.72 : 1.55);
-    var gap = settings.lineSpace === -1 ? 8 : (settings.lineSpace === 1 ? 16 : 12);
-    root.style.setProperty('--reader-font-size', settings.fontSize + 'px');
-    root.style.setProperty('--reader-line-height', lineHeight + '');
-    root.style.setProperty('--reader-gap', gap + 'px');
-    root.style.setProperty('--reader-color', settings.comfort ? '#fff1d6' : '#edf3ff');
+    root.style.setProperty('--reader-font-size', vars.fontSize);
+    root.style.setProperty('--reader-line-height', vars.lineHeight);
+    root.style.setProperty('--reader-gap', vars.gap);
+    root.style.setProperty('--reader-color', vars.color);
     renderReaderSettings();
   }
 
@@ -994,7 +959,7 @@
   }
 
   function runSearch(query) {
-    query = cleanWhitespace(query || document.getElementById('search-input').value);
+    query = textUtils.cleanWhitespace(query || document.getElementById('search-input').value);
     if (!query) {
       showToast('Type a novel title first', 'error');
       return Promise.resolve();
@@ -1019,7 +984,7 @@
         return;
       }
       state.searchingQuery = '';
-      state.results = normalizeResults(payload.results || []);
+      state.results = textUtils.normalizeResults(payload.results || []);
       renderResults();
       renderResume();
       if (state.results.length) {
@@ -1405,26 +1370,26 @@
 
   function adjustReaderFont(delta) {
     var settings = state.data.readerSettings;
-    settings.fontSize = Math.min(22, Math.max(14, settings.fontSize + delta));
+    settings.fontSize = readerPreferences.adjustFontSize(settings.fontSize, delta);
     saveData();
     applyReaderSettings();
   }
 
   function adjustReaderSpace(delta) {
     var settings = state.data.readerSettings;
-    settings.lineSpace = Math.min(1, Math.max(-1, settings.lineSpace + delta));
+    settings.lineSpace = readerPreferences.adjustLineSpace(settings.lineSpace, delta);
     saveData();
     applyReaderSettings();
   }
 
   function toggleReaderComfort() {
-    state.data.readerSettings.comfort = !state.data.readerSettings.comfort;
+    state.data.readerSettings = readerPreferences.toggleComfort(state.data.readerSettings);
     saveData();
     applyReaderSettings();
   }
 
   function appendChapterDigit(digit) {
-    state.chapterJumpValue = (state.chapterJumpValue + digit).replace(/^0+(\d)/, '$1').slice(0, 5);
+    state.chapterJumpValue = chapterJump.appendDigit(state.chapterJumpValue, digit);
     renderChapterJumpValue();
   }
 
@@ -1434,20 +1399,10 @@
       return;
     }
     var targetNumber = Number(state.chapterJumpValue);
-    var index = findChapterIndexByNumber(targetNumber);
-    if (index === -1) {
-      index = Math.min(state.currentNovel.chapters.length - 1, Math.max(0, targetNumber - 1));
-    }
+    var index = chapterJump.resolveChapterJumpIndex(state.currentNovel.chapters, targetNumber);
     state.pickerIndex = index;
     renderChapterPicker();
     showToast('Jumped to chapter ' + (index + 1), 'success');
-  }
-
-  function findChapterIndexByNumber(number) {
-    return (state.currentNovel.chapters || []).findIndex(function(chapter) {
-      var found = String(chapter.title || '').match(/Chapter\s+(\d+)/i);
-      return found && Number(found[1]) === number;
-    });
   }
 
   function prefetchAdjacentChapters(chapter) {

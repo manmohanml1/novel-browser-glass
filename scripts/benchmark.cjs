@@ -4,7 +4,11 @@ const budgets = [
   ['novel-browser/app.js', 90_000],
   ['novel-browser/styles.css', 40_000],
   ['novel-browser/index.html', 24_000],
-  ['work/dev-server.mjs', 28_000]
+  ['novel-browser/src/features/chapter-jump.js', 8_000],
+  ['novel-browser/src/features/reader-settings.js', 10_000],
+  ['novel-browser/src/utils/text.js', 8_000],
+  ['novel-browser/src/server/readnovelfull.mjs', 32_000],
+  ['work/dev-server.mjs', 8_000]
 ];
 
 async function main() {

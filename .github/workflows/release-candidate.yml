@@ -1,0 +1,49 @@
+name: Prepare Release Candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: Environment to validate and package
+        required: true
+        default: staging
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+
+jobs:
+  package:
+    name: Package ${{ inputs.target_environment }}
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.target_environment }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run static checks
+        run: npm run check
+
+      - name: Run benchmarks
+        run: npm run benchmark
+
+      - name: Run regression tests
+        run: npm test
+
+      - name: Package validated release candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: novel-browser-glass-${{ inputs.target_environment }}-${{ github.sha }}
+          path: |
+            novel-browser
+            api
+            vercel.json
+            package.json
+          if-no-files-found: error
