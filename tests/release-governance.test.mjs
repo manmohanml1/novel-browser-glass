@@ -11,11 +11,11 @@ const deployment = await readFile(new URL('../DEPLOYMENT.md', import.meta.url), 
 const readme = await readFile(new URL('../README.md', import.meta.url), 'utf8');
 const changelog = await readFile(new URL('../CHANGELOG.md', import.meta.url), 'utf8');
 
-test('current release identifies the deployed minor version', function() {
+test('current release identifies the active patch version', function() {
   assert.match(release.version, /^v\d+\.\d+\.\d+$/);
-  assert.equal(release.version, 'v0.2.0');
-  assert.equal(release.type, 'feat');
-  assert.equal(release.label, 'Minor release');
+  assert.equal(release.version, 'v0.2.1');
+  assert.equal(release.type, 'fix');
+  assert.equal(release.label, 'Patch release');
 });
 
 test('pull request quality workflow enforces portfolio-style title prefixes', function() {

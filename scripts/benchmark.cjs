@@ -6,6 +6,7 @@ const budgets = [
   ['novel-browser/index.html', 24_000],
   ['novel-browser/src/features/chapter-jump.js', 8_000],
   ['novel-browser/src/features/reader-settings.js', 10_000],
+  ['novel-browser/src/features/spatial-navigation.js', 8_000],
   ['novel-browser/src/utils/text.js', 8_000],
   ['novel-browser/src/server/readnovelfull.mjs', 32_000],
   ['work/dev-server.mjs', 8_000]

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- Fixed D-pad movement so arrow directions move spatially through keyboard rows and sections instead of stepping through every focusable character.
+- Increased default visual scale for the home screen, keyboard, cards, and navigation controls for better readability on Meta Ray-Ban Display.
+
 ## 0.2.0
 
 - Added portfolio-style release governance with a source-of-truth release config, environment config, PR checklist, multi-environment CI, release-candidate packaging, and versioning docs.

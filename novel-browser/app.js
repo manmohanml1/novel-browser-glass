@@ -3,6 +3,7 @@ import { setupEnvironment } from './src/config/environment.js';
 import { release } from './src/config/release.js';
 import * as chapterJump from './src/features/chapter-jump.js';
 import * as readerPreferences from './src/features/reader-settings.js';
+import { findNextSpatialItem } from './src/features/spatial-navigation.js';
 import { loadStoredData, normalizeStoredData as normalizePersistedData, saveStoredData } from './src/services/storage.js';
 import * as textUtils from './src/utils/text.js';
 
@@ -104,15 +105,29 @@ import * as textUtils from './src/utils/text.js';
       return;
     }
 
-    var nextIndex;
-    if (direction === 'up' || direction === 'left') {
-      nextIndex = index > 0 ? index - 1 : focusables.length - 1;
-    } else {
-      nextIndex = index < focusables.length - 1 ? index + 1 : 0;
+    var nextIndex = findNextSpatialFocusIndex(focusables, index, direction);
+    if (nextIndex === -1) {
+      if (direction === 'up' || direction === 'left') {
+        nextIndex = index > 0 ? index - 1 : focusables.length - 1;
+      } else {
+        nextIndex = index < focusables.length - 1 ? index + 1 : 0;
+      }
     }
 
     focusables[nextIndex].focus();
     focusables[nextIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  function findNextSpatialFocusIndex(focusables, currentIndex, direction) {
+    return findNextSpatialItem(focusables.map(function(element) {
+      var rect = element.getBoundingClientRect();
+      return {
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height
+      };
+    }), currentIndex, direction);
   }
 
   function setLoading(isLoading, message) {
