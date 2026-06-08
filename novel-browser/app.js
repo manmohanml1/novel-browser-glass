@@ -77,10 +77,18 @@ import * as textUtils from './src/utils/text.js';
   }
 
   function focusFirst(container) {
-    var el = container.querySelector('.focusable:not([disabled]):not(.hidden)');
+    var el = getVisibleFocusables(container)[0];
     if (el) {
       el.focus();
     }
+  }
+
+  function getVisibleFocusables(container) {
+    return Array.from(
+      container.querySelectorAll('.focusable:not([disabled]):not(.hidden)')
+    ).filter(function(element) {
+      return element.getClientRects().length > 0;
+    });
   }
 
   function moveFocus(direction) {
@@ -89,9 +97,7 @@ import * as textUtils from './src/utils/text.js';
       return;
     }
 
-    var focusables = Array.from(
-      container.querySelectorAll('.focusable:not([disabled]):not(.hidden)')
-    );
+    var focusables = getVisibleFocusables(container);
 
     if (!focusables.length) {
       return;
@@ -1654,10 +1660,14 @@ import * as textUtils from './src/utils/text.js';
     });
 
     document.addEventListener('keydown', function(event) {
-      var isInput = document.activeElement &&
+      var isEditableInput = document.activeElement &&
         (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA');
 
-      if (isInput && !['Escape', 'Enter'].includes(event.key)) {
+      if (isEditableInput && document.activeElement.readOnly) {
+        isEditableInput = false;
+      }
+
+      if (isEditableInput && !['Escape', 'Enter'].includes(event.key)) {
         return;
       }
 
@@ -1679,7 +1689,7 @@ import * as textUtils from './src/utils/text.js';
           event.preventDefault();
           break;
         case 'Enter':
-          if (isInput) {
+          if (isEditableInput) {
             var submitAction = document.activeElement.dataset.submitAction;
             if (submitAction) {
               handleAction(submitAction, document.activeElement);

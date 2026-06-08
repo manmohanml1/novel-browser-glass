@@ -21,6 +21,8 @@ test('reader comfort features are wired', function() {
   assert.match(html, /release-badge/);
   assert.match(app, /setupEnvironment/);
   assert.match(app, /renderReleaseBadge/);
+  assert.match(app, /getVisibleFocusables/);
+  assert.match(app, /document\.activeElement\.readOnly/);
   assert.match(app, /applyReaderSettings/);
   assert.match(app, /setFocusMode/);
   assert.match(css, /#reader\.focus-mode/);
