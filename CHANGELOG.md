@@ -3,6 +3,7 @@
 ## 0.2.1
 
 - Fixed D-pad movement so arrow directions move spatially through keyboard rows and sections instead of stepping through every focusable character.
+- Fixed desktop keypad Left/Right behavior with deterministic grid movement and added a sticky typed-query preview above the keypad.
 - Increased default visual scale for the home screen, keyboard, cards, and navigation controls for better readability on Meta Ray-Ban Display.
 
 ## 0.2.0

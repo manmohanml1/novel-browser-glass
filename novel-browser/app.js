@@ -111,7 +111,10 @@ import * as textUtils from './src/utils/text.js';
       return;
     }
 
-    var nextIndex = findNextSpatialFocusIndex(focusables, index, direction);
+    var nextIndex = findGridFocusIndex(focusables, index, direction);
+    if (nextIndex === -1) {
+      nextIndex = findNextSpatialFocusIndex(focusables, index, direction);
+    }
     if (nextIndex === -1) {
       if (direction === 'up' || direction === 'left') {
         nextIndex = index > 0 ? index - 1 : focusables.length - 1;
@@ -122,6 +125,54 @@ import * as textUtils from './src/utils/text.js';
 
     focusables[nextIndex].focus();
     focusables[nextIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  function findGridFocusIndex(focusables, currentIndex, direction) {
+    var current = focusables[currentIndex];
+    var grid = current.closest('[data-grid-columns], .number-grid, .jump-grid, .setting-controls');
+    if (!grid) {
+      return -1;
+    }
+
+    var gridItems = Array.from(grid.querySelectorAll('.focusable:not([disabled]):not(.hidden)'))
+      .filter(function(element) {
+        return element.getClientRects().length > 0;
+      });
+    var gridIndex = gridItems.indexOf(current);
+    if (gridIndex === -1) {
+      return -1;
+    }
+
+    var columns = Number(grid.dataset.gridColumns || 0) || getGridColumnCount(grid);
+    var targetGridIndex = -1;
+    if (direction === 'left') {
+      targetGridIndex = gridIndex % columns === 0 ? gridIndex : gridIndex - 1;
+    } else if (direction === 'right') {
+      targetGridIndex = gridIndex % columns === columns - 1 ? gridIndex : gridIndex + 1;
+    } else if (direction === 'up') {
+      targetGridIndex = gridIndex - columns;
+    } else if (direction === 'down') {
+      targetGridIndex = gridIndex + columns;
+    }
+
+    if (targetGridIndex < 0 || targetGridIndex >= gridItems.length) {
+      return -1;
+    }
+
+    return focusables.indexOf(gridItems[targetGridIndex]);
+  }
+
+  function getGridColumnCount(grid) {
+    if (grid.classList.contains('number-grid')) {
+      return 3;
+    }
+    if (grid.classList.contains('jump-grid')) {
+      return 4;
+    }
+    if (grid.classList.contains('setting-controls')) {
+      return 2;
+    }
+    return 6;
   }
 
   function findNextSpatialFocusIndex(focusables, currentIndex, direction) {
@@ -998,6 +1049,7 @@ import * as textUtils from './src/utils/text.js';
     }
 
     document.getElementById('search-input').value = query;
+    updateQueryPreview();
     state.data.recentQuery = query;
     state.results = [];
     state.searchingQuery = query;
@@ -1186,10 +1238,12 @@ import * as textUtils from './src/utils/text.js';
         break;
       case 'quick-search':
         document.getElementById('search-input').value = element.dataset.value || '';
+        updateQueryPreview();
         runSearch(element.dataset.value || '');
         break;
       case 'fill-example':
         document.getElementById('search-input').value = element.dataset.value || '';
+        updateQueryPreview();
         document.getElementById('search-input').focus();
         break;
       case 'append-char':
@@ -1614,17 +1668,31 @@ import * as textUtils from './src/utils/text.js';
 
   function setQuery(value) {
     document.getElementById('search-input').value = cleanWhitespace(value).slice(0, 48);
+    updateQueryPreview();
   }
 
   function appendQueryChar(value) {
     var input = document.getElementById('search-input');
     var next = (input.value + value).replace(/\s+/g, ' ').slice(0, 48);
     input.value = next;
+    updateQueryPreview();
   }
 
   function deleteQueryChar() {
     var input = document.getElementById('search-input');
     input.value = input.value.slice(0, -1);
+    updateQueryPreview();
+  }
+
+  function updateQueryPreview() {
+    var input = document.getElementById('search-input');
+    var preview = document.getElementById('query-preview');
+    if (!input || !preview) {
+      return;
+    }
+    var value = input.value.trim();
+    preview.textContent = value || 'Type with the keypad';
+    preview.classList.toggle('is-empty', !value);
   }
 
   function onScreenEnter(screenId) {
@@ -1636,6 +1704,7 @@ import * as textUtils from './src/utils/text.js';
       if (state.data.recentQuery) {
         document.getElementById('search-input').value = state.data.recentQuery;
       }
+      updateQueryPreview();
     }
     if (screenId === 'chapter-picker') {
       renderChapterPicker();
@@ -1726,6 +1795,7 @@ import * as textUtils from './src/utils/text.js';
     if (state.data.recentQuery) {
       document.getElementById('search-input').value = state.data.recentQuery;
     }
+    updateQueryPreview();
     setTimeout(function() {
       navigateTo('home', { addToHistory: false });
     }, 100);

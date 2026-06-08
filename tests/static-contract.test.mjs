@@ -19,9 +19,13 @@ test('reader comfort features are wired', function() {
   assert.match(html, /reader-settings/);
   assert.match(html, /toggle-reader-focus/);
   assert.match(html, /release-badge/);
+  assert.match(html, /query-preview/);
+  assert.match(html, /data-grid-columns="6"/);
   assert.match(app, /setupEnvironment/);
   assert.match(app, /renderReleaseBadge/);
   assert.match(app, /getVisibleFocusables/);
+  assert.match(app, /findGridFocusIndex/);
+  assert.match(app, /updateQueryPreview/);
   assert.match(app, /document\.activeElement\.readOnly/);
   assert.match(app, /applyReaderSettings/);
   assert.match(app, /setFocusMode/);
