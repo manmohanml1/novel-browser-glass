@@ -1,6 +1,6 @@
 import { CONFIG, createDefaultData } from './src/config/app-config.js';
 import { setupEnvironment } from './src/config/environment.js';
-import { release } from './src/config/release.js';
+import { formatReleaseBadge, release } from './src/config/release.js';
 import * as chapterJump from './src/features/chapter-jump.js';
 import { findNextGridIndex } from './src/features/grid-navigation.js';
 import * as readerPreferences from './src/features/reader-settings.js';
@@ -27,6 +27,7 @@ import * as textUtils from './src/utils/text.js';
     currentChapter: null,
     detailChapterIndex: 0,
     pickerIndex: 0,
+    preferredReaderAction: '',
     chapterJumpValue: '',
     focusMode: false,
     restoringProgress: false
@@ -78,8 +79,19 @@ import * as textUtils from './src/utils/text.js';
   }
 
   function focusFirst(container) {
+    if (container && container.id === 'home') {
+      var homeControl = getHomeStartControl();
+      if (homeControl) {
+        homeControl.focus();
+        homeControl.scrollIntoView({ block: 'nearest' });
+        return;
+      }
+    }
+
     if (container && container.id === 'reader') {
-      var readerControl = container.querySelector('.nav-bar .focusable[data-action="open-chapter-picker"]');
+      var preferredAction = state.preferredReaderAction || 'open-chapter-picker';
+      var readerControl = container.querySelector('.nav-bar .focusable[data-action="' + preferredAction + '"]') ||
+        container.querySelector('.nav-bar .focusable[data-action="open-chapter-picker"]');
       if (readerControl) {
         readerControl.focus();
         return;
@@ -90,6 +102,13 @@ import * as textUtils from './src/utils/text.js';
     if (el) {
       el.focus();
     }
+  }
+
+  function getHomeStartControl() {
+    if (state.data && state.data.lastNovel && state.data.lastNovel.url) {
+      return document.querySelector('.hero-actions .focusable[data-action="resume-last"]');
+    }
+    return document.querySelector('.hero-actions .focusable[data-action="focus-search"]');
   }
 
   function getVisibleFocusables(container) {
@@ -223,6 +242,43 @@ import * as textUtils from './src/utils/text.js';
     return true;
   }
 
+  function focusFirstResult() {
+    if (state.currentScreen !== 'home') {
+      return;
+    }
+
+    var firstResult = document.querySelector('#results-list .focusable[data-action="open-result"]');
+    if (!firstResult) {
+      return;
+    }
+
+    firstResult.focus();
+    firstResult.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  function focusSearchKeypad() {
+    var target = document.querySelector('.key-grid .focusable[data-char="A"]');
+    if (!target) {
+      return;
+    }
+    target.focus();
+    target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
+  function focusFavoritesList() {
+    var favorite = document.querySelector('#favorites-list .focusable');
+    var panel = document.getElementById('favorites-list');
+    if (favorite) {
+      favorite.focus();
+      favorite.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      return;
+    }
+    if (panel) {
+      panel.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+    showToast('No favorites saved yet', 'error');
+  }
+
   function setLoading(isLoading, message) {
     state.isLoading = isLoading;
     var spinner = document.getElementById('loading');
@@ -272,7 +328,7 @@ import * as textUtils from './src/utils/text.js';
     if (!badge || !environment || environment.showReleaseBadge === false) {
       return;
     }
-    badge.textContent = release.version + ' ' + environment.name;
+    badge.textContent = formatReleaseBadge(release.version, environment.name);
     badge.setAttribute('title', release.label + ' (' + release.type + ')');
   }
 
@@ -714,7 +770,11 @@ import * as textUtils from './src/utils/text.js';
   function renderResults() {
     var list = document.getElementById('results-list');
     var meta = document.getElementById('results-meta');
+    var clearButton = document.querySelector('[data-action="clear-results"]');
     list.innerHTML = '';
+    if (clearButton) {
+      clearButton.classList.toggle('is-disabled', !state.results.length && !state.searchingQuery && !state.resultsCleared);
+    }
 
     if (state.searchingQuery) {
       list.innerHTML = '<div class="empty-state">Searching for "' + escapeHtml(state.searchingQuery) + '"...</div>';
@@ -751,11 +811,19 @@ import * as textUtils from './src/utils/text.js';
 
   function renderResume() {
     var container = document.getElementById('resume-card');
+    var heroResumeMeta = document.getElementById('hero-resume-meta');
     var saved = state.data.lastNovel;
 
     if (!saved || !saved.url) {
+      if (heroResumeMeta) {
+        heroResumeMeta.textContent = 'Nothing yet';
+      }
       container.innerHTML = '<div class="empty-state">Nothing saved yet. Open a novel or chapter and it will appear here for quick resume.</div>';
       return;
+    }
+
+    if (heroResumeMeta) {
+      heroResumeMeta.textContent = saved.chapterTitle ? 'Continue chapter' : 'Open saved novel';
     }
 
     container.innerHTML = [
@@ -1108,6 +1176,7 @@ import * as textUtils from './src/utils/text.js';
       renderResults();
       renderResume();
       if (state.results.length) {
+        focusFirstResult();
         showToast('Found ' + state.results.length + ' novels', 'success');
       } else {
         showToast('No results found', 'error');
@@ -1161,6 +1230,9 @@ import * as textUtils from './src/utils/text.js';
 
   function loadChapter(url, options) {
     options = options || {};
+    if (options.preferredReaderAction) {
+      state.preferredReaderAction = options.preferredReaderAction;
+    }
     var chapterPreview = findChapterByUrl(url);
     if (options.showLoading !== false && chapterPreview) {
       renderChapterLoading(chapterPreview);
@@ -1248,6 +1320,12 @@ import * as textUtils from './src/utils/text.js';
         break;
       case 'go-home':
         goHome();
+        break;
+      case 'focus-search':
+        focusSearchKeypad();
+        break;
+      case 'focus-favorites':
+        focusFavoritesList();
         break;
       case 'run-search':
         runSearch();
@@ -1360,14 +1438,14 @@ import * as textUtils from './src/utils/text.js';
         break;
       case 'prev-chapter':
         if (state.currentChapter && state.currentChapter.prevUrl) {
-          loadChapter(state.currentChapter.prevUrl);
+          loadChapter(state.currentChapter.prevUrl, { preferredReaderAction: 'prev-chapter' });
         } else {
           showToast('No previous chapter found', 'error');
         }
         break;
       case 'next-chapter':
         if (state.currentChapter && state.currentChapter.nextUrl) {
-          loadChapter(state.currentChapter.nextUrl);
+          loadChapter(state.currentChapter.nextUrl, { preferredReaderAction: 'next-chapter' });
         } else {
           showToast('No next chapter found', 'error');
         }
@@ -1723,12 +1801,16 @@ import * as textUtils from './src/utils/text.js';
   function updateQueryPreview() {
     var input = document.getElementById('search-input');
     var preview = document.getElementById('query-preview');
+    var searchKeys = Array.from(document.querySelectorAll('[data-action="run-search"]'));
     if (!input || !preview) {
       return;
     }
     var value = input.value.trim();
     preview.textContent = value || 'Type with the keypad';
     preview.classList.toggle('is-empty', !value);
+    searchKeys.forEach(function(button) {
+      button.classList.toggle('is-ready', Boolean(value));
+    });
   }
 
   function onScreenEnter(screenId) {
@@ -1737,9 +1819,6 @@ import * as textUtils from './src/utils/text.js';
       renderResume();
       renderRecent();
       renderFavorites();
-      if (state.data.recentQuery) {
-        document.getElementById('search-input').value = state.data.recentQuery;
-      }
       updateQueryPreview();
     }
     if (screenId === 'chapter-picker') {
@@ -1844,9 +1923,6 @@ import * as textUtils from './src/utils/text.js';
     renderResume();
     renderRecent();
     renderFavorites();
-    if (state.data.recentQuery) {
-      document.getElementById('search-input').value = state.data.recentQuery;
-    }
     updateQueryPreview();
     setTimeout(function() {
       navigateTo('home', { addToHistory: false });

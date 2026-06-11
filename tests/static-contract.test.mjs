@@ -21,10 +21,26 @@ test('reader comfort features are wired', function() {
   assert.match(html, /toggle-reader-focus/);
   assert.match(html, /release-badge/);
   assert.match(html, /query-preview/);
+  assert.match(html, /class="text-input sr-only-input"/);
   assert.match(html, /data-grid-columns="6"/);
+  assert.match(html, /data-action="focus-search"/);
+  assert.match(html, /data-action="focus-favorites"/);
+  assert.match(html, /hero-actions" data-grid-columns="3"/);
+  assert.match(html, /nav-bar" data-grid-columns="4"[\s\S]*data-action="open-detail-current"/);
+  assert.match(html, /nav-bar" data-grid-columns="4"[\s\S]*data-action="open-picker-current"/);
+  assert.match(html, /nav-bar" data-grid-columns="6"[\s\S]*data-action="next-chapter"/);
+  assert.match(html, /nav-bar" data-grid-columns="2"[\s\S]*data-action="toggle-reader-focus"/);
+  assert.match(html, /key-primary[^>]+data-action="run-search"/);
+  assert.match(html, /section-action focusable" data-action="clear-results"/);
+  assert.doesNotMatch(html, /nav-item primary focusable" data-action="run-search"/);
   assert.match(app, /setupEnvironment/);
   assert.match(app, /renderReleaseBadge/);
   assert.match(app, /getVisibleFocusables/);
+  assert.match(app, /function getHomeStartControl/);
+  assert.match(app, /function focusSearchKeypad/);
+  assert.match(app, /function focusFavoritesList/);
+  assert.match(app, /function focusFirstResult/);
+  assert.doesNotMatch(app, /search-input'\)\.value = state\.data\.recentQuery/);
   assert.match(app, /findGridFocusIndex/);
   assert.match(app, /findNextGridIndex/);
   assert.doesNotMatch(app, /\\.jump-grid, \\.setting-controls/);
@@ -32,6 +48,9 @@ test('reader comfort features are wired', function() {
   assert.match(app, /document\.activeElement\.readOnly/);
   assert.match(app, /applyReaderSettings/);
   assert.match(app, /setFocusMode/);
+  assert.match(css, /\.text-input[\s\S]*color: transparent/);
+  assert.match(css, /\.text-input[\s\S]*caret-color: transparent/);
+  assert.match(css, /\.sr-only-input[\s\S]*position: absolute/);
   assert.match(css, /#reader\.focus-mode/);
 });
 
@@ -45,10 +64,10 @@ test('chapter navigation and resume features are wired', function() {
 
 test('offline shell is registered', function() {
   assert.match(html, /manifest\.webmanifest/);
-  assert.match(html, /styles\.css\?v=0\.2\.1/);
-  assert.match(html, /app\.js\?v=0\.2\.1-reader-controls/);
+  assert.match(html, /styles\.css\?v=0\.2\.2-ux-polish/);
+  assert.match(html, /app\.js\?v=0\.2\.2-ux-polish/);
   assert.match(app, /serviceWorker\.register/);
-  assert.match(sw, /novel-browser-glass-v0-2-1-reader-controls/);
+  assert.match(sw, /novel-browser-glass-v0-2-2-ux-polish/);
   assert.match(sw, /fetch\(event\.request\)/);
   assert.match(sw, /cache\.put\(event\.request/);
 });
@@ -56,11 +75,16 @@ test('offline shell is registered', function() {
 test('reader D-pad scrolls text vertically and moves controls horizontally', function() {
   assert.match(app, /function scrollReader/);
   assert.match(app, /function moveReaderControlFocus/);
+  assert.match(app, /preferredReaderAction/);
+  assert.match(app, /loadChapter\(state\.currentChapter\.nextUrl, \{ preferredReaderAction: 'next-chapter' \}/);
+  assert.match(app, /loadChapter\(state\.currentChapter\.prevUrl, \{ preferredReaderAction: 'prev-chapter' \}/);
   assert.match(app, /state\.currentScreen === 'reader'[\s\S]*scrollReader\('up'\)/);
   assert.match(app, /state\.currentScreen === 'reader'[\s\S]*scrollReader\('down'\)/);
   assert.match(app, /state\.currentScreen === 'reader'[\s\S]*moveReaderControlFocus\('left'\)/);
   assert.match(app, /state\.currentScreen === 'reader'[\s\S]*moveReaderControlFocus\('right'\)/);
   assert.match(app, /data-action="open-chapter-picker"/);
+  assert.match(css, /\.reading-content[\s\S]*radial-gradient/);
+  assert.match(css, /\.reading-content \.reader-panel[\s\S]*background: transparent/);
 });
 
 test('Vercel and modular source structure are present', async function() {

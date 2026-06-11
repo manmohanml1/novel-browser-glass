@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.2
+
+- Added a primary Search key directly inside the on-screen keypad so front-page searches are reachable without navigating to the bottom bar.
+- Replaced the duplicate Home bottom action bar with three launch actions: Search New, Resume, and Favorites.
+- Moved Clear Results into the Results heading so clearing stays visible and contextual.
+- Improved home focus behavior so returning to Home lands on the typing grid instead of miscellaneous shortcuts.
+- Moved the reader card background onto the scroll surface so long chapters keep a consistent reading backdrop while scrolling.
+- Focus the first search result automatically after successful searches to reduce D-pad travel.
+
 ## 0.2.1
 
 - Fixed D-pad movement so arrow directions move spatially through keyboard rows and sections instead of stepping through every focusable character.

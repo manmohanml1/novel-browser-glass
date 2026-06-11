@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-import { release } from '../novel-browser/src/config/release.js';
+import { formatReleaseBadge, release } from '../novel-browser/src/config/release.js';
 
 const qualityWorkflow = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
 const releaseWorkflow = await readFile(new URL('../.github/workflows/release-candidate.yml', import.meta.url), 'utf8');
@@ -13,9 +13,15 @@ const changelog = await readFile(new URL('../CHANGELOG.md', import.meta.url), 'u
 
 test('current release identifies the active patch version', function() {
   assert.match(release.version, /^v\d+\.\d+\.\d+$/);
-  assert.equal(release.version, 'v0.2.1');
+  assert.equal(release.version, 'v0.2.2');
   assert.equal(release.type, 'fix');
   assert.equal(release.label, 'Patch release');
+});
+
+test('release badge omits production suffix but labels dev and staging', function() {
+  assert.equal(formatReleaseBadge(release.version, 'production'), 'v0.2.2');
+  assert.equal(formatReleaseBadge(release.version, 'staging'), 'v0.2.2 staging');
+  assert.equal(formatReleaseBadge(release.version, 'development'), 'v0.2.2 development');
 });
 
 test('pull request quality workflow enforces portfolio-style title prefixes', function() {
