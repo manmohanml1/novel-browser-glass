@@ -46,11 +46,21 @@ test('chapter navigation and resume features are wired', function() {
 test('offline shell is registered', function() {
   assert.match(html, /manifest\.webmanifest/);
   assert.match(html, /styles\.css\?v=0\.2\.1/);
-  assert.match(html, /app\.js\?v=0\.2\.1/);
+  assert.match(html, /app\.js\?v=0\.2\.1-reader-controls/);
   assert.match(app, /serviceWorker\.register/);
-  assert.match(sw, /novel-browser-glass-v0-2-1/);
+  assert.match(sw, /novel-browser-glass-v0-2-1-reader-controls/);
   assert.match(sw, /fetch\(event\.request\)/);
   assert.match(sw, /cache\.put\(event\.request/);
+});
+
+test('reader D-pad scrolls text vertically and moves controls horizontally', function() {
+  assert.match(app, /function scrollReader/);
+  assert.match(app, /function moveReaderControlFocus/);
+  assert.match(app, /state\.currentScreen === 'reader'[\s\S]*scrollReader\('up'\)/);
+  assert.match(app, /state\.currentScreen === 'reader'[\s\S]*scrollReader\('down'\)/);
+  assert.match(app, /state\.currentScreen === 'reader'[\s\S]*moveReaderControlFocus\('left'\)/);
+  assert.match(app, /state\.currentScreen === 'reader'[\s\S]*moveReaderControlFocus\('right'\)/);
+  assert.match(app, /data-action="open-chapter-picker"/);
 });
 
 test('Vercel and modular source structure are present', async function() {

@@ -78,6 +78,14 @@ import * as textUtils from './src/utils/text.js';
   }
 
   function focusFirst(container) {
+    if (container && container.id === 'reader') {
+      var readerControl = container.querySelector('.nav-bar .focusable[data-action="open-chapter-picker"]');
+      if (readerControl) {
+        readerControl.focus();
+        return;
+      }
+    }
+
     var el = getVisibleFocusables(container)[0];
     if (el) {
       el.focus();
@@ -173,6 +181,46 @@ import * as textUtils from './src/utils/text.js';
         height: rect.height
       };
     }), currentIndex, direction);
+  }
+
+  function scrollReader(direction) {
+    var scroller = document.getElementById('reader-scroll');
+    if (!scroller) {
+      return;
+    }
+
+    var distance = Math.max(120, Math.round(scroller.clientHeight * 0.72));
+    var top = direction === 'down' ? distance : -distance;
+    scroller.scrollBy({ top: top, behavior: 'smooth' });
+  }
+
+  function moveReaderControlFocus(direction) {
+    var reader = screens.reader;
+    if (!reader) {
+      return false;
+    }
+
+    var controls = getVisibleFocusables(reader.querySelector('.nav-bar'));
+    if (!controls.length) {
+      return false;
+    }
+
+    var index = controls.indexOf(document.activeElement);
+    if (index === -1) {
+      index = controls.findIndex(function(control) {
+        return control.dataset.action === 'open-chapter-picker';
+      });
+      if (index === -1) {
+        index = 0;
+      }
+    } else if (direction === 'left') {
+      index = index > 0 ? index - 1 : controls.length - 1;
+    } else {
+      index = index < controls.length - 1 ? index + 1 : 0;
+    }
+
+    controls[index].focus();
+    return true;
   }
 
   function setLoading(isLoading, message) {
@@ -1730,19 +1778,35 @@ import * as textUtils from './src/utils/text.js';
 
       switch (event.key) {
         case 'ArrowUp':
-          moveFocus('up');
+          if (state.currentScreen === 'reader') {
+            scrollReader('up');
+          } else {
+            moveFocus('up');
+          }
           event.preventDefault();
           break;
         case 'ArrowDown':
-          moveFocus('down');
+          if (state.currentScreen === 'reader') {
+            scrollReader('down');
+          } else {
+            moveFocus('down');
+          }
           event.preventDefault();
           break;
         case 'ArrowLeft':
-          moveFocus('left');
+          if (state.currentScreen === 'reader') {
+            moveReaderControlFocus('left');
+          } else {
+            moveFocus('left');
+          }
           event.preventDefault();
           break;
         case 'ArrowRight':
-          moveFocus('right');
+          if (state.currentScreen === 'reader') {
+            moveReaderControlFocus('right');
+          } else {
+            moveFocus('right');
+          }
           event.preventDefault();
           break;
         case 'Enter':

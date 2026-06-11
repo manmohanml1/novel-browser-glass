@@ -1,9 +1,9 @@
-var CACHE_NAME = 'novel-browser-glass-v0-2-1';
+var CACHE_NAME = 'novel-browser-glass-v0-2-1-reader-controls';
 var ASSETS = [
   './',
   './index.html',
   './styles.css?v=0.2.1',
-  './app.js?v=0.2.1',
+  './app.js?v=0.2.1-reader-controls',
   './favicon.png',
   './manifest.webmanifest'
 ];
