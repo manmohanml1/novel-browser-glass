@@ -1,9 +1,9 @@
-var CACHE_NAME = 'novel-browser-glass-v1';
+var CACHE_NAME = 'novel-browser-glass-v0-2-1';
 var ASSETS = [
   './',
   './index.html',
-  './styles.css',
-  './app.js',
+  './styles.css?v=0.2.1',
+  './app.js?v=0.2.1',
   './favicon.png',
   './manifest.webmanifest'
 ];
@@ -32,7 +32,19 @@ self.addEventListener('fetch', function(event) {
   if (event.request.url.indexOf('/api/') !== -1) {
     return;
   }
-  event.respondWith(caches.match(event.request).then(function(cached) {
-    return cached || fetch(event.request);
+  if (event.request.method !== 'GET') {
+    return;
+  }
+  event.respondWith(fetch(event.request).then(function(response) {
+    if (!response || response.status !== 200) {
+      return response;
+    }
+    var clone = response.clone();
+    caches.open(CACHE_NAME).then(function(cache) {
+      cache.put(event.request, clone);
+    });
+    return response;
+  }).catch(function() {
+    return caches.match(event.request);
   }));
 });

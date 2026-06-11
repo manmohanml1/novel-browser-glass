@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 const html = await readFile('novel-browser/index.html', 'utf8');
 const css = await readFile('novel-browser/styles.css', 'utf8');
 const app = await readFile('novel-browser/app.js', 'utf8');
+const sw = await readFile('novel-browser/sw.js', 'utf8');
 
 test('glasses viewport and D-pad contract are present', function() {
   assert.match(html, /width=600,\s*height=600/);
@@ -44,7 +45,12 @@ test('chapter navigation and resume features are wired', function() {
 
 test('offline shell is registered', function() {
   assert.match(html, /manifest\.webmanifest/);
+  assert.match(html, /styles\.css\?v=0\.2\.1/);
+  assert.match(html, /app\.js\?v=0\.2\.1/);
   assert.match(app, /serviceWorker\.register/);
+  assert.match(sw, /novel-browser-glass-v0-2-1/);
+  assert.match(sw, /fetch\(event\.request\)/);
+  assert.match(sw, /cache\.put\(event\.request/);
 });
 
 test('Vercel and modular source structure are present', async function() {
