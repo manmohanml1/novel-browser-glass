@@ -25,6 +25,8 @@ test('reader comfort features are wired', function() {
   assert.match(app, /renderReleaseBadge/);
   assert.match(app, /getVisibleFocusables/);
   assert.match(app, /findGridFocusIndex/);
+  assert.match(app, /findNextGridIndex/);
+  assert.doesNotMatch(app, /\\.jump-grid, \\.setting-controls/);
   assert.match(app, /updateQueryPreview/);
   assert.match(app, /document\.activeElement\.readOnly/);
   assert.match(app, /applyReaderSettings/);

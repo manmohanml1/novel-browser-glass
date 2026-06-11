@@ -2,6 +2,7 @@ import { CONFIG, createDefaultData } from './src/config/app-config.js';
 import { setupEnvironment } from './src/config/environment.js';
 import { release } from './src/config/release.js';
 import * as chapterJump from './src/features/chapter-jump.js';
+import { findNextGridIndex } from './src/features/grid-navigation.js';
 import * as readerPreferences from './src/features/reader-settings.js';
 import { findNextSpatialItem } from './src/features/spatial-navigation.js';
 import { loadStoredData, normalizeStoredData as normalizePersistedData, saveStoredData } from './src/services/storage.js';
@@ -129,7 +130,7 @@ import * as textUtils from './src/utils/text.js';
 
   function findGridFocusIndex(focusables, currentIndex, direction) {
     var current = focusables[currentIndex];
-    var grid = current.closest('[data-grid-columns], .number-grid, .jump-grid, .setting-controls');
+    var grid = current.closest('[data-grid-columns], .number-grid, .setting-controls');
     if (!grid) {
       return -1;
     }
@@ -144,18 +145,8 @@ import * as textUtils from './src/utils/text.js';
     }
 
     var columns = Number(grid.dataset.gridColumns || 0) || getGridColumnCount(grid);
-    var targetGridIndex = -1;
-    if (direction === 'left') {
-      targetGridIndex = gridIndex % columns === 0 ? gridIndex : gridIndex - 1;
-    } else if (direction === 'right') {
-      targetGridIndex = gridIndex % columns === columns - 1 ? gridIndex : gridIndex + 1;
-    } else if (direction === 'up') {
-      targetGridIndex = gridIndex - columns;
-    } else if (direction === 'down') {
-      targetGridIndex = gridIndex + columns;
-    }
-
-    if (targetGridIndex < 0 || targetGridIndex >= gridItems.length) {
+    var targetGridIndex = findNextGridIndex(gridIndex, gridItems.length, columns, direction);
+    if (targetGridIndex === -1) {
       return -1;
     }
 
@@ -165,9 +156,6 @@ import * as textUtils from './src/utils/text.js';
   function getGridColumnCount(grid) {
     if (grid.classList.contains('number-grid')) {
       return 3;
-    }
-    if (grid.classList.contains('jump-grid')) {
-      return 4;
     }
     if (grid.classList.contains('setting-controls')) {
       return 2;
