@@ -2,7 +2,9 @@ import { CONFIG, createDefaultData } from './src/config/app-config.js';
 import { setupEnvironment } from './src/config/environment.js';
 import { release } from './src/config/release.js';
 import * as chapterJump from './src/features/chapter-jump.js';
+import { findNextGridIndex } from './src/features/grid-navigation.js';
 import * as readerPreferences from './src/features/reader-settings.js';
+import { findNextSpatialItem } from './src/features/spatial-navigation.js';
 import { loadStoredData, normalizeStoredData as normalizePersistedData, saveStoredData } from './src/services/storage.js';
 import * as textUtils from './src/utils/text.js';
 
@@ -76,10 +78,26 @@ import * as textUtils from './src/utils/text.js';
   }
 
   function focusFirst(container) {
-    var el = container.querySelector('.focusable:not([disabled]):not(.hidden)');
+    if (container && container.id === 'reader') {
+      var readerControl = container.querySelector('.nav-bar .focusable[data-action="open-chapter-picker"]');
+      if (readerControl) {
+        readerControl.focus();
+        return;
+      }
+    }
+
+    var el = getVisibleFocusables(container)[0];
     if (el) {
       el.focus();
     }
+  }
+
+  function getVisibleFocusables(container) {
+    return Array.from(
+      container.querySelectorAll('.focusable:not([disabled]):not(.hidden)')
+    ).filter(function(element) {
+      return element.getClientRects().length > 0;
+    });
   }
 
   function moveFocus(direction) {
@@ -88,9 +106,7 @@ import * as textUtils from './src/utils/text.js';
       return;
     }
 
-    var focusables = Array.from(
-      container.querySelectorAll('.focusable:not([disabled]):not(.hidden)')
-    );
+    var focusables = getVisibleFocusables(container);
 
     if (!focusables.length) {
       return;
@@ -104,15 +120,107 @@ import * as textUtils from './src/utils/text.js';
       return;
     }
 
-    var nextIndex;
-    if (direction === 'up' || direction === 'left') {
-      nextIndex = index > 0 ? index - 1 : focusables.length - 1;
-    } else {
-      nextIndex = index < focusables.length - 1 ? index + 1 : 0;
+    var nextIndex = findGridFocusIndex(focusables, index, direction);
+    if (nextIndex === -1) {
+      nextIndex = findNextSpatialFocusIndex(focusables, index, direction);
+    }
+    if (nextIndex === -1) {
+      if (direction === 'up' || direction === 'left') {
+        nextIndex = index > 0 ? index - 1 : focusables.length - 1;
+      } else {
+        nextIndex = index < focusables.length - 1 ? index + 1 : 0;
+      }
     }
 
     focusables[nextIndex].focus();
     focusables[nextIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  function findGridFocusIndex(focusables, currentIndex, direction) {
+    var current = focusables[currentIndex];
+    var grid = current.closest('[data-grid-columns], .number-grid, .setting-controls');
+    if (!grid) {
+      return -1;
+    }
+
+    var gridItems = Array.from(grid.querySelectorAll('.focusable:not([disabled]):not(.hidden)'))
+      .filter(function(element) {
+        return element.getClientRects().length > 0;
+      });
+    var gridIndex = gridItems.indexOf(current);
+    if (gridIndex === -1) {
+      return -1;
+    }
+
+    var columns = Number(grid.dataset.gridColumns || 0) || getGridColumnCount(grid);
+    var targetGridIndex = findNextGridIndex(gridIndex, gridItems.length, columns, direction);
+    if (targetGridIndex === -1) {
+      return -1;
+    }
+
+    return focusables.indexOf(gridItems[targetGridIndex]);
+  }
+
+  function getGridColumnCount(grid) {
+    if (grid.classList.contains('number-grid')) {
+      return 3;
+    }
+    if (grid.classList.contains('setting-controls')) {
+      return 2;
+    }
+    return 6;
+  }
+
+  function findNextSpatialFocusIndex(focusables, currentIndex, direction) {
+    return findNextSpatialItem(focusables.map(function(element) {
+      var rect = element.getBoundingClientRect();
+      return {
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height
+      };
+    }), currentIndex, direction);
+  }
+
+  function scrollReader(direction) {
+    var scroller = document.getElementById('reader-scroll');
+    if (!scroller) {
+      return;
+    }
+
+    var distance = Math.max(120, Math.round(scroller.clientHeight * 0.72));
+    var top = direction === 'down' ? distance : -distance;
+    scroller.scrollBy({ top: top, behavior: 'smooth' });
+  }
+
+  function moveReaderControlFocus(direction) {
+    var reader = screens.reader;
+    if (!reader) {
+      return false;
+    }
+
+    var controls = getVisibleFocusables(reader.querySelector('.nav-bar'));
+    if (!controls.length) {
+      return false;
+    }
+
+    var index = controls.indexOf(document.activeElement);
+    if (index === -1) {
+      index = controls.findIndex(function(control) {
+        return control.dataset.action === 'open-chapter-picker';
+      });
+      if (index === -1) {
+        index = 0;
+      }
+    } else if (direction === 'left') {
+      index = index > 0 ? index - 1 : controls.length - 1;
+    } else {
+      index = index < controls.length - 1 ? index + 1 : 0;
+    }
+
+    controls[index].focus();
+    return true;
   }
 
   function setLoading(isLoading, message) {
@@ -977,6 +1085,7 @@ import * as textUtils from './src/utils/text.js';
     }
 
     document.getElementById('search-input').value = query;
+    updateQueryPreview();
     state.data.recentQuery = query;
     state.results = [];
     state.searchingQuery = query;
@@ -1165,10 +1274,12 @@ import * as textUtils from './src/utils/text.js';
         break;
       case 'quick-search':
         document.getElementById('search-input').value = element.dataset.value || '';
+        updateQueryPreview();
         runSearch(element.dataset.value || '');
         break;
       case 'fill-example':
         document.getElementById('search-input').value = element.dataset.value || '';
+        updateQueryPreview();
         document.getElementById('search-input').focus();
         break;
       case 'append-char':
@@ -1593,17 +1704,31 @@ import * as textUtils from './src/utils/text.js';
 
   function setQuery(value) {
     document.getElementById('search-input').value = cleanWhitespace(value).slice(0, 48);
+    updateQueryPreview();
   }
 
   function appendQueryChar(value) {
     var input = document.getElementById('search-input');
     var next = (input.value + value).replace(/\s+/g, ' ').slice(0, 48);
     input.value = next;
+    updateQueryPreview();
   }
 
   function deleteQueryChar() {
     var input = document.getElementById('search-input');
     input.value = input.value.slice(0, -1);
+    updateQueryPreview();
+  }
+
+  function updateQueryPreview() {
+    var input = document.getElementById('search-input');
+    var preview = document.getElementById('query-preview');
+    if (!input || !preview) {
+      return;
+    }
+    var value = input.value.trim();
+    preview.textContent = value || 'Type with the keypad';
+    preview.classList.toggle('is-empty', !value);
   }
 
   function onScreenEnter(screenId) {
@@ -1615,6 +1740,7 @@ import * as textUtils from './src/utils/text.js';
       if (state.data.recentQuery) {
         document.getElementById('search-input').value = state.data.recentQuery;
       }
+      updateQueryPreview();
     }
     if (screenId === 'chapter-picker') {
       renderChapterPicker();
@@ -1639,32 +1765,52 @@ import * as textUtils from './src/utils/text.js';
     });
 
     document.addEventListener('keydown', function(event) {
-      var isInput = document.activeElement &&
+      var isEditableInput = document.activeElement &&
         (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA');
 
-      if (isInput && !['Escape', 'Enter'].includes(event.key)) {
+      if (isEditableInput && document.activeElement.readOnly) {
+        isEditableInput = false;
+      }
+
+      if (isEditableInput && !['Escape', 'Enter'].includes(event.key)) {
         return;
       }
 
       switch (event.key) {
         case 'ArrowUp':
-          moveFocus('up');
+          if (state.currentScreen === 'reader') {
+            scrollReader('up');
+          } else {
+            moveFocus('up');
+          }
           event.preventDefault();
           break;
         case 'ArrowDown':
-          moveFocus('down');
+          if (state.currentScreen === 'reader') {
+            scrollReader('down');
+          } else {
+            moveFocus('down');
+          }
           event.preventDefault();
           break;
         case 'ArrowLeft':
-          moveFocus('left');
+          if (state.currentScreen === 'reader') {
+            moveReaderControlFocus('left');
+          } else {
+            moveFocus('left');
+          }
           event.preventDefault();
           break;
         case 'ArrowRight':
-          moveFocus('right');
+          if (state.currentScreen === 'reader') {
+            moveReaderControlFocus('right');
+          } else {
+            moveFocus('right');
+          }
           event.preventDefault();
           break;
         case 'Enter':
-          if (isInput) {
+          if (isEditableInput) {
             var submitAction = document.activeElement.dataset.submitAction;
             if (submitAction) {
               handleAction(submitAction, document.activeElement);
@@ -1701,6 +1847,7 @@ import * as textUtils from './src/utils/text.js';
     if (state.data.recentQuery) {
       document.getElementById('search-input').value = state.data.recentQuery;
     }
+    updateQueryPreview();
     setTimeout(function() {
       navigateTo('home', { addToHistory: false });
     }, 100);

@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 const html = await readFile('novel-browser/index.html', 'utf8');
 const css = await readFile('novel-browser/styles.css', 'utf8');
 const app = await readFile('novel-browser/app.js', 'utf8');
+const sw = await readFile('novel-browser/sw.js', 'utf8');
 
 test('glasses viewport and D-pad contract are present', function() {
   assert.match(html, /width=600,\s*height=600/);
@@ -19,8 +20,16 @@ test('reader comfort features are wired', function() {
   assert.match(html, /reader-settings/);
   assert.match(html, /toggle-reader-focus/);
   assert.match(html, /release-badge/);
+  assert.match(html, /query-preview/);
+  assert.match(html, /data-grid-columns="6"/);
   assert.match(app, /setupEnvironment/);
   assert.match(app, /renderReleaseBadge/);
+  assert.match(app, /getVisibleFocusables/);
+  assert.match(app, /findGridFocusIndex/);
+  assert.match(app, /findNextGridIndex/);
+  assert.doesNotMatch(app, /\\.jump-grid, \\.setting-controls/);
+  assert.match(app, /updateQueryPreview/);
+  assert.match(app, /document\.activeElement\.readOnly/);
   assert.match(app, /applyReaderSettings/);
   assert.match(app, /setFocusMode/);
   assert.match(css, /#reader\.focus-mode/);
@@ -36,7 +45,22 @@ test('chapter navigation and resume features are wired', function() {
 
 test('offline shell is registered', function() {
   assert.match(html, /manifest\.webmanifest/);
+  assert.match(html, /styles\.css\?v=0\.2\.1/);
+  assert.match(html, /app\.js\?v=0\.2\.1-reader-controls/);
   assert.match(app, /serviceWorker\.register/);
+  assert.match(sw, /novel-browser-glass-v0-2-1-reader-controls/);
+  assert.match(sw, /fetch\(event\.request\)/);
+  assert.match(sw, /cache\.put\(event\.request/);
+});
+
+test('reader D-pad scrolls text vertically and moves controls horizontally', function() {
+  assert.match(app, /function scrollReader/);
+  assert.match(app, /function moveReaderControlFocus/);
+  assert.match(app, /state\.currentScreen === 'reader'[\s\S]*scrollReader\('up'\)/);
+  assert.match(app, /state\.currentScreen === 'reader'[\s\S]*scrollReader\('down'\)/);
+  assert.match(app, /state\.currentScreen === 'reader'[\s\S]*moveReaderControlFocus\('left'\)/);
+  assert.match(app, /state\.currentScreen === 'reader'[\s\S]*moveReaderControlFocus\('right'\)/);
+  assert.match(app, /data-action="open-chapter-picker"/);
 });
 
 test('Vercel and modular source structure are present', async function() {

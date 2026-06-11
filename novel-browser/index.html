@@ -6,7 +6,7 @@
   <title>Novel Browser</title>
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=0.2.1">
 </head>
 <body>
   <div id="app" class="app-root">
@@ -14,7 +14,7 @@
       <header class="header">
         <div>
           <h1>Novel Browser</h1>
-          <div class="header-meta">Search and read ReadNovelFull chapters <span class="release-badge" id="release-badge">v0.2.0</span></div>
+          <div class="header-meta">Search and read ReadNovelFull chapters <span class="release-badge" id="release-badge">v0.2.1</span></div>
         </div>
         <span class="status-pill" id="status-indicator">Ready</span>
       </header>
@@ -26,7 +26,7 @@
           <p class="hero-copy">Pick a saved title or build a query with the on-screen keys. The reader saves your last opened novel and chapter locally.</p>
         </section>
 
-        <section class="panel">
+        <section class="panel search-panel">
           <label class="field-label" for="search-input">Novel title</label>
           <input
             id="search-input"
@@ -38,13 +38,16 @@
             tabindex="-1"
             data-submit-action="run-search"
           >
+          <div class="query-preview" id="query-preview" aria-live="polite">
+            Type with the keypad
+          </div>
           <div class="helper-row">
             <button class="chip focusable" data-action="quick-search" data-value="Shadow Slave">Shadow Slave</button>
             <button class="chip focusable" data-action="quick-search" data-value="Martial Peak">Martial Peak</button>
             <button class="chip focusable" data-action="quick-search" data-value="Supreme Magus">Supreme Magus</button>
             <button class="chip focusable" data-action="quick-search" data-value="Lord of the Mysteries">Lord of Mysteries</button>
           </div>
-          <div class="key-grid" id="key-grid">
+          <div class="key-grid" id="key-grid" data-grid-columns="6">
             <button class="key focusable" data-action="append-char" data-char="A">A</button>
             <button class="key focusable" data-action="append-char" data-char="B">B</button>
             <button class="key focusable" data-action="append-char" data-char="C">C</button>
@@ -307,6 +310,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.js"></script>
+  <script type="module" src="app.js?v=0.2.1-reader-controls"></script>
 </body>
 </html>
