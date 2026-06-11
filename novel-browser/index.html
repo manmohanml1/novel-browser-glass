@@ -6,7 +6,7 @@
   <title>Novel Browser</title>
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=0.2.1">
+  <link rel="stylesheet" href="styles.css?v=0.2.2-ux-polish">
 </head>
 <body>
   <div id="app" class="app-root">
@@ -14,7 +14,7 @@
       <header class="header">
         <div>
           <h1>Novel Browser</h1>
-          <div class="header-meta">Search and read ReadNovelFull chapters <span class="release-badge" id="release-badge">v0.2.1</span></div>
+          <div class="header-meta">Search and read ReadNovelFull chapters <span class="release-badge" id="release-badge">v0.2.2</span></div>
         </div>
         <span class="status-pill" id="status-indicator">Ready</span>
       </header>
@@ -24,13 +24,27 @@
           <p class="hero-kicker">Search</p>
           <h2 class="hero-title">Find a novel fast, then jump chapter to chapter.</h2>
           <p class="hero-copy">Pick a saved title or build a query with the on-screen keys. The reader saves your last opened novel and chapter locally.</p>
+          <div class="hero-actions" data-grid-columns="3">
+            <button class="hero-action primary focusable" data-action="focus-search">
+              <span class="hero-action-title">Search New</span>
+              <span class="hero-action-meta">Jump to keypad</span>
+            </button>
+            <button class="hero-action focusable" data-action="resume-last">
+              <span class="hero-action-title">Resume</span>
+              <span class="hero-action-meta" id="hero-resume-meta">Saved chapter</span>
+            </button>
+            <button class="hero-action focusable" data-action="focus-favorites">
+              <span class="hero-action-title">Favorites</span>
+              <span class="hero-action-meta">Saved novels</span>
+            </button>
+          </div>
         </section>
 
         <section class="panel search-panel">
           <label class="field-label" for="search-input">Novel title</label>
           <input
             id="search-input"
-            class="text-input"
+            class="text-input sr-only-input"
             type="text"
             placeholder="Lord of the Mysteries"
             autocomplete="off"
@@ -77,13 +91,17 @@
             <button class="key wide focusable" data-action="append-char" data-char=" ">Space</button>
             <button class="key wide focusable" data-action="delete-char">Delete</button>
             <button class="key wide focusable" data-action="clear-query">Clear</button>
+            <button class="key wide key-primary focusable" data-action="run-search">Search</button>
           </div>
         </section>
 
         <section class="panel">
           <div class="section-heading">
             <h2>Results</h2>
-            <span class="section-meta" id="results-meta">No search yet</span>
+            <div class="section-actions">
+              <span class="section-meta" id="results-meta">No search yet</span>
+              <button class="section-action focusable" data-action="clear-results">Clear</button>
+            </div>
           </div>
           <div id="loading" class="loading-container hidden">
             <div class="loading-spinner"></div>
@@ -122,11 +140,6 @@
         </section>
       </div>
 
-      <nav class="nav-bar">
-        <button class="nav-item primary focusable" data-action="run-search">Search</button>
-        <button class="nav-item focusable" data-action="clear-results">Clear Results</button>
-        <button class="nav-item focusable" data-action="resume-last">Resume</button>
-      </nav>
     </div>
 
     <div id="detail" class="screen hidden">
@@ -164,7 +177,7 @@
         </section>
       </div>
 
-      <nav class="nav-bar">
+      <nav class="nav-bar" data-grid-columns="4">
         <button class="nav-item focusable" data-action="go-home">Home</button>
         <button class="nav-item primary focusable" data-action="open-detail-current">Open</button>
         <button class="nav-item focusable" data-action="toggle-novel-favorite">Favorite</button>
@@ -220,7 +233,7 @@
         </section>
       </div>
 
-      <nav class="nav-bar">
+      <nav class="nav-bar" data-grid-columns="4">
         <button class="nav-item focusable" data-action="go-home">Home</button>
         <button class="nav-item focusable" data-action="chapter-window" data-delta="-1">Up</button>
         <button class="nav-item primary focusable" data-action="open-picker-current">Open</button>
@@ -246,7 +259,7 @@
         </section>
       </div>
 
-      <nav class="nav-bar">
+      <nav class="nav-bar" data-grid-columns="6">
         <button class="nav-item focusable" data-action="go-home">Home</button>
         <button class="nav-item focusable focus-optional" data-action="prev-chapter">Prev</button>
         <button class="nav-item focusable" data-action="open-chapter-picker">Chapters</button>
@@ -303,13 +316,13 @@
         </section>
       </div>
 
-      <nav class="nav-bar">
+      <nav class="nav-bar" data-grid-columns="2">
         <button class="nav-item focusable" data-action="back">Back</button>
         <button class="nav-item primary focusable" data-action="toggle-reader-focus">Focus</button>
       </nav>
     </div>
   </div>
 
-  <script type="module" src="app.js?v=0.2.1-reader-controls"></script>
+  <script type="module" src="app.js?v=0.2.2-ux-polish"></script>
 </body>
 </html>
